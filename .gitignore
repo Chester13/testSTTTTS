@@ -1,0 +1,22 @@
+# IntelliJ IDEA
+.idea
+*.iml
+
+# Gradle
+.gradle
+gradlew.bat
+build
+app/build/*
+local.properties
+reports
+*.tokens
+
+# Mac OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
