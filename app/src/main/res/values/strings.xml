@@ -1,6 +1,15 @@
 <resources>
-    <string name="app_name">testSTTTTS</string>
+    <string name="app_name">test STT/TTS</string>
+    <string name="title_back">Back</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_exit">Exit</string>
+
+    <string-array name="stt_language">
+        <item>System default</item>
+        <item>zh_TW</item>
+        <item>en_US</item>
+        <item>ja_JP</item>
+        <item>de_DE</item>
+    </string-array>
+
 </resources>
