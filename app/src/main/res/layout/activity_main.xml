@@ -17,26 +17,40 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:background="#F6F6F6"
             android:layout_marginLeft="3dp"
             android:layout_weight="0.5">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textSize="50sp"
-                android:text="STT"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="50sp"
+                    android:text="@string/stt"/>
+                <TextView
+                    android:id="@+id/stt_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
+                    android:gravity="bottom"
+                    android:textSize="14sp"
+                    android:text="@string/uninitiated"/>
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="20dp"
-                android:textSize="18sp"
-                android:text="Language:"/>
+                android:textSize="16sp"
+                android:text="@string/language_colon"/>
 
             <Spinner
                 android:id="@+id/spinner_stt"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="25dp"
                 android:background="#CFCF8F"/>
 
             <Button
@@ -44,37 +58,41 @@
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:layout_marginTop="20dp"
+                android:enabled="true"
                 android:onClick="onButtonClick"
-                android:text="Init"/>
+                android:text="@string/init"/>
 
             <Button
                 android:id="@+id/button_stt_start"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:layout_marginTop="5dp"
+                android:enabled="false"
                 android:onClick="onButtonClick"
-                android:text="Start"/>
+                android:text="@string/start"/>
 
             <Button
                 android:id="@+id/button_stt_stop"
                 android:layout_width="150dp"
                 android:layout_height="match_parent"
                 android:layout_marginTop="5dp"
+                android:enabled="false"
                 android:onClick="onButtonClick"
-                android:text="Stop"/>
+                android:text="@string/stop"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="15dp"
-                android:text="STT result:"/>
+                android:text="@string/stt_result_colon"/>
 
             <EditText
+                android:id="@+id/stt_result"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:minWidth="60dp"
                 android:inputType="text"
-                android:hint="(none)"
+                android:hint="@string/hint_none"
                 android:clickable="false"
                 android:focusable="false"/>
         </LinearLayout>
@@ -85,12 +103,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:background="#FAFAFA"
+            android:layout_marginLeft="3dp"
             android:layout_weight="0.5">
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textSize="50sp"
-                android:text="TTS"/>
+                android:text="@string/tts"/>
         </LinearLayout>
         <!-- TTS views End -->
 

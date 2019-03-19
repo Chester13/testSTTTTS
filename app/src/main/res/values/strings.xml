@@ -1,15 +1,25 @@
 <resources>
     <string name="app_name">test STT/TTS</string>
+    <string name="stt">STT</string>
+    <string name="tts">TTS</string>
+
+    <string name="uninitiated">uninitiated</string>
+    <string name="initialed">initialed</string>
+    <string name="listening">listening</string>
+    <string name="stopped">stopped</string>
+
+    <string name="language_colon">Language:</string>
+    <string name="system_default">System default</string>
+
+    <string name="hint_none">(none)</string>
+    <string name="stt_result_colon">STT result:</string>
+
+    <string name="init">Init</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+
+
     <string name="title_back">Back</string>
     <string name="title_home">Home</string>
     <string name="title_exit">Exit</string>
-
-    <string-array name="stt_language">
-        <item>System default</item>
-        <item>zh_TW</item>
-        <item>en_US</item>
-        <item>ja_JP</item>
-        <item>de_DE</item>
-    </string-array>
-
 </resources>
