@@ -106,11 +106,74 @@
             android:background="#FAFAFA"
             android:layout_marginLeft="3dp"
             android:layout_weight="0.5">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textSize="50sp"
+                    android:text="@string/tts"/>
+                <TextView
+                    android:id="@+id/tts_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
+                    android:gravity="bottom"
+                    android:textSize="14sp"
+                    android:text="@string/uninitiated"/>
+            </LinearLayout>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:textSize="50sp"
-                android:text="@string/tts"/>
+                android:layout_marginTop="20dp"
+                android:textSize="16sp"
+                android:text="@string/language_colon"/>
+
+            <Spinner
+                android:id="@+id/spinner_tts"
+                android:layout_width="wrap_content"
+                android:layout_height="25dp"
+                android:background="#CFCF8F"/>
+
+            <Button
+                android:id="@+id/button_tts_init"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp"
+                android:enabled="true"
+                android:onClick="onButtonClick"
+                android:text="@string/init"/>
+
+            <Button
+                android:id="@+id/button_tts_speak"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp"
+                android:enabled="false"
+                android:onClick="onButtonClick"
+                android:text="@string/speak"/>
+
+            <EditText
+                android:id="@+id/tts_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:minWidth="60dp"
+                android:inputType="text"
+                android:hint="@string/hint_none"
+                android:text="Hello MOTO"/>
+
+            <Button
+                android:id="@+id/button_tts_stop"
+                android:layout_width="150dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp"
+                android:enabled="false"
+                android:onClick="onButtonClick"
+                android:text="@string/stop"/>
         </LinearLayout>
         <!-- TTS views End -->
 

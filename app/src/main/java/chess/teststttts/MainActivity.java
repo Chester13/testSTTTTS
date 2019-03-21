@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
@@ -28,10 +30,19 @@ public class MainActivity extends AppCompatActivity {
     private TextView mSTT_status;
     private String mSTT_lang = null;
     private EditText mSTT_result;
-    private STT_Listener mSTT_listener = new STT_Listener();
+
+    private TextView mTTS_status;
+    private Locale mTTS_lang = null;
+    private EditText mTTS_content;
 
     // STT service
     private SpeechRecognizer mSR = null;
+    private STT_Listener mSTT_listener = new STT_Listener();
+
+    // TTS service
+    private TextToSpeech mTTS = null;
+    private TTS_OnInitListener mTTS_onInitListener = new TTS_OnInitListener();
+    private TTS_UtteranceProgressListener mTTS_progressListener = new TTS_UtteranceProgressListener();
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -66,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         initViews();
     }
@@ -78,6 +90,12 @@ public class MainActivity extends AppCompatActivity {
         if (null != mSR) {
             mSR.destroy();
             mSR = null;
+        }
+
+        // Release TTS.
+        if (null != mTTS) {
+            mTTS.shutdown();
+            mTTS = null;
         }
     }
 
@@ -105,10 +123,33 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> sttLangList = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, stt_langs);
         spinnerSTTlang.setAdapter(sttLangList);
-        spinnerSTTlang.setOnItemSelectedListener(mSpinnerSTTlang_Listener);
+        spinnerSTTlang.setOnItemSelectedListener(mSpinner_Listener);
 
         // Will update STT result on this EditText view
         mSTT_result = findViewById(R.id.stt_result);
+
+        // -------------------------------------------------------------------
+        // TTS language spinner
+        Spinner spinnerTTSlang = findViewById(R.id.spinner_tts);
+        String[] tts_langs = {
+                getString(R.string.system_default),
+                Locale.TAIWAN.toString(),
+                Locale.US.toString(),
+                Locale.JAPAN.toString(),
+                Locale.GERMANY.toString()
+        };
+        ArrayAdapter<String> ttsLangList = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, tts_langs);
+        spinnerTTSlang.setAdapter(ttsLangList);
+        spinnerTTSlang.setOnItemSelectedListener(mSpinner_Listener);
+
+        // TTS status sequence:
+        //   uninitiated -> initialed -> speaking
+        //   -> stopped -> speaking -> stopped -> speaking -> stopped -> ...
+        mTTS_status = findViewById(R.id.tts_status);
+        mTTS_status.setText(R.string.uninitiated);
+
+        mTTS_content = findViewById(R.id.tts_content);
     }
 
     // All buttons onClick listener
@@ -150,22 +191,97 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
 
+            case R.id.button_tts_init:
+                if (DBG) Log.d(TAG, "onClick, tts init");
+                if (null == mTTS) {
+                    // Create and wait for OnInitListener callback.
+                    mTTS = new TextToSpeech(this, mTTS_onInitListener);
+                }
+                break;
+
+            case R.id.button_tts_speak:
+                if (DBG) Log.d(TAG, "onClick, tts speak, mTTS_lang="+mTTS_lang);
+                if (null != mTTS && !mTTS.isSpeaking()) {
+                    if (null != mTTS_lang) {
+                        // Use desired TTS language if user selected one.
+                        mTTS.setLanguage(mTTS_lang);
+                    }
+
+                    // Start speaking.
+                    mTTS.speak(mTTS_content.getText(), TextToSpeech.QUEUE_ADD, null, TAG);
+
+                    // Update TTS status.
+                    mTTS_status.setText(R.string.speaking);
+                } else {
+                    Log.w(TAG, "TTS is null or still speaking!!");
+                }
+                break;
+
+            case R.id.button_tts_stop:
+                if (DBG) Log.d(TAG, "onClick, tts stop");
+                if (null != mTTS && mTTS.isSpeaking()) {
+                    mTTS.stop();
+                    mTTS_status.setText(R.string.stopped);
+                }
+                break;
+
             default:
                 break;
         }
     }
 
-    AdapterView.OnItemSelectedListener mSpinnerSTTlang_Listener = new AdapterView.OnItemSelectedListener() {
+    AdapterView.OnItemSelectedListener mSpinner_Listener = new AdapterView.OnItemSelectedListener() {
         public void onItemSelected(AdapterView<?> parent,
                                    View view, int pos, long id) {
             final String selected_str = parent.getItemAtPosition(pos).toString();
-            if (DBG) Log.d(TAG, "onSpinnerSTTlang selected: " + selected_str);
+            switch (parent.getId()) {
+                case R.id.spinner_stt:
+                    {
+                        // Update mSTT_lang.
+                        if (getString(R.string.system_default).equals(selected_str)) {
+                            mSTT_lang = null;
+                        } else {
+                            mSTT_lang = selected_str;
+                        }
+                        if (DBG) Log.d(TAG, "STT lang selected: "+selected_str+", mSTT_lang="+mSTT_lang);
+                    }
+                    break;
 
-            // Update mSTT_lang.
-            if (getString(R.string.system_default).equals(selected_str)) {
-                mSTT_lang = null;
-            } else {
-                mSTT_lang = selected_str;
+                case R.id.spinner_tts:
+                    {
+                        // Update mTTS_lang.
+                        if (getString(R.string.system_default).equals(selected_str)) {
+                            mTTS_lang = Locale.getDefault();
+                        } else {
+                            switch (selected_str) {
+                                case "zh_TW":
+                                    mTTS_lang = Locale.CHINESE;
+                                    break;
+
+                                case "en_US":
+                                    mTTS_lang = Locale.ENGLISH;
+                                    break;
+
+                                case "ja_JP":
+                                    mTTS_lang = Locale.JAPANESE;
+                                    break;
+
+                                case "de_DE":
+                                    mTTS_lang = Locale.GERMAN;
+                                    break;
+
+                                default:
+                                    Log.w(TAG, "Not found matched lang, use default.");
+                                    mTTS_lang = Locale.getDefault();
+                                    break;
+                            }
+                        }
+                        if (DBG) Log.d(TAG, "TTS lang selected: "+selected_str+", mTTS_lang="+mTTS_lang);
+                    }
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -175,8 +291,8 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
-    class STT_Listener implements RecognitionListener
-    {
+    // STT progress listener
+    class STT_Listener implements RecognitionListener {
         public void onReadyForSpeech(Bundle params) {
             if (DBG) Log.d(TAG, "onReadyForSpeech");
         }
@@ -195,16 +311,15 @@ public class MainActivity extends AppCompatActivity {
 
         public void onEndOfSpeech() {
             if (DBG) Log.d(TAG, "onEndofSpeech");
-            mSTT_status.setText(R.string.stopped);
+            updateStatus(mSTT_status, R.string.stopped);
         }
 
         public void onError(int error) {
             Log.e(TAG, "onError: " + error);
-            mSTT_result.setText(error);
+            updateStatus(mSTT_status, "Error "+error);
         }
 
-        public void onResults(Bundle results)
-        {
+        public void onResults(Bundle results) {
             try {
                 // Get STT result and update it to UI.
                 ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
@@ -218,11 +333,78 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void onPartialResults(Bundle partialResults) {
-            Log.d(TAG, "onPartialResults");
+            if (DBG) Log.d(TAG, "onPartialResults");
         }
 
         public void onEvent(int eventType, Bundle params) {
-            Log.d(TAG, "onEvent " + eventType);
+            if (DBG) Log.d(TAG, "onEvent " + eventType);
         }
+    }
+
+    // TTS initialization listener
+    class TTS_OnInitListener implements TextToSpeech.OnInitListener {
+        @Override
+        public void onInit(int status) {
+            if (TextToSpeech.SUCCESS == status) {
+                updateStatus(mTTS_status, R.string.initialed);
+
+                // To tracking TTS progress.
+                mTTS.setOnUtteranceProgressListener(mTTS_progressListener);
+
+                // We disable init button because only need one initialization,
+                // and then enable Start & Stop buttons.
+                findViewById(R.id.button_tts_init).setEnabled(false);
+                findViewById(R.id.button_tts_speak).setEnabled(true);
+                findViewById(R.id.button_tts_stop).setEnabled(true);
+            } else {
+                Log.e(TAG, "Fail to init TTS!! status="+status);
+                updateStatus(mTTS_status, "Init failed, status="+status);
+            }
+        }
+    }
+
+    // TTS progress listener
+    class TTS_UtteranceProgressListener extends UtteranceProgressListener {
+        @Override
+        public void onStart(String utteranceId) {
+            if (DBG) Log.d(TAG, "TTS_utterance, onStart, utteranceId="+utteranceId);
+        }
+
+        @Override
+        public void onDone(String utteranceId) {
+            if (DBG) Log.d(TAG, "TTS_utterance, onDone, utteranceId="+utteranceId);
+            updateStatus(mTTS_status, R.string.stopped);
+        }
+
+        @Override
+        public void onError(String utteranceId) {
+            if (DBG) Log.d(TAG, "TTS_utterance, onError, utteranceId="+utteranceId);
+            updateStatus(mTTS_status, "Error");
+        }
+
+        @Override
+        public void onError(String utteranceId, int errorCode) {
+            if (DBG) Log.d(TAG, "TTS_utterance, onError, utteranceId="+utteranceId+", errorCode="+errorCode);
+            updateStatus(mTTS_status, "Error "+errorCode);
+        }
+
+        @Override
+        public void onStop(String utteranceId, boolean interrupted) {
+            if (DBG) Log.d(TAG, "TTS_utterance, onStop, utteranceId="+utteranceId+", interrupted="+interrupted);
+        }
+    }
+
+    // To update status on UI thread.
+    private void updateStatus(final TextView tv, final int resId) {
+        updateStatus(tv, getString(resId));
+    }
+
+    // To update status on UI thread.
+    private void updateStatus(final TextView tv, final String status) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                tv.setText(status);
+            }
+        });
     }
 }
