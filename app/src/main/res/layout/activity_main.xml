@@ -7,9 +7,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+        android:baselineAligned="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <!-- STT views Begin -->
@@ -28,7 +33,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:textSize="50sp"
+                    android:textSize="48sp"
                     android:text="@string/stt"/>
                 <TextView
                     android:id="@+id/stt_status"
@@ -53,10 +58,17 @@
                 android:layout_height="25dp"
                 android:background="#CFCF8F"/>
 
+            <CheckBox
+                android:id="@+id/checkbox_enable_partial"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_marginTop="5dp"
+                android:text="@string/enable_partial_result" />
+
             <Button
                 android:id="@+id/button_stt_init"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
+                android:layout_height="42dp"
                 android:layout_marginTop="20dp"
                 android:enabled="true"
                 android:onClick="onButtonClick"
@@ -65,16 +77,25 @@
             <Button
                 android:id="@+id/button_stt_start"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
+                android:layout_height="42dp"
                 android:layout_marginTop="5dp"
                 android:enabled="false"
                 android:onClick="onButtonClick"
                 android:text="@string/start"/>
 
             <Button
+                android:id="@+id/button_stt_cancel"
+                android:layout_width="150dp"
+                android:layout_height="42dp"
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:onClick="onButtonClick"
+                android:text="@string/cancel"/>
+
+            <Button
                 android:id="@+id/button_stt_stop"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
+                android:layout_height="42dp"
                 android:layout_marginTop="5dp"
                 android:enabled="false"
                 android:onClick="onButtonClick"
@@ -83,7 +104,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/stt_result_colon"/>
 
             <EditText
@@ -114,7 +135,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:textSize="50sp"
+                    android:textSize="48sp"
                     android:text="@string/tts"/>
                 <TextView
                     android:id="@+id/tts_status"
@@ -139,11 +160,53 @@
                 android:layout_height="25dp"
                 android:background="#CFCF8F"/>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/speech_rate"/>
+                <EditText
+                    android:id="@+id/speech_rate_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
+                    android:ems="5"
+                    android:inputType="numberDecimal"
+                    android:text="@string/num_1.0"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:text="@string/pitch"/>
+                <EditText
+                    android:id="@+id/pitch_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
+                    android:ems="5"
+                    android:inputType="numberDecimal"
+                    android:text="@string/num_1.0"
+                    />
+            </LinearLayout>
+
             <Button
                 android:id="@+id/button_tts_init"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="20dp"
+                android:layout_height="42dp"
+                android:layout_marginTop="10dp"
                 android:enabled="true"
                 android:onClick="onButtonClick"
                 android:text="@string/init"/>
@@ -151,8 +214,8 @@
             <Button
                 android:id="@+id/button_tts_speak"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:layout_marginTop="20dp"
+                android:layout_height="42dp"
+                android:layout_marginTop="5dp"
                 android:enabled="false"
                 android:onClick="onButtonClick"
                 android:text="@string/speak"/>
@@ -169,7 +232,7 @@
             <Button
                 android:id="@+id/button_tts_stop"
                 android:layout_width="150dp"
-                android:layout_height="match_parent"
+                android:layout_height="42dp"
                 android:layout_marginTop="20dp"
                 android:enabled="false"
                 android:onClick="onButtonClick"
@@ -178,6 +241,7 @@
         <!-- TTS views End -->
 
     </LinearLayout>
+    </ScrollView>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"
@@ -189,6 +253,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/navigation" />
 
 </android.support.constraint.ConstraintLayout>

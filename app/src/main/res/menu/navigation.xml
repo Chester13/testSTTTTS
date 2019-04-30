@@ -15,4 +15,8 @@
         android:icon="@drawable/ic_menu_exit"
         android:title="@string/title_exit" />
 
+    <item
+        android:id="@+id/navigation_hide"
+        android:icon="@drawable/ic_menu_hide"
+        android:title="@string/title_hide" />
 </menu>

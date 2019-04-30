@@ -1,5 +1,6 @@
 package chess.teststttts;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
@@ -11,10 +12,12 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -62,6 +65,10 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.navigation_exit:
                     finish();
                     return true;
+
+                case R.id.navigation_hide:
+                    findViewById(R.id.navigation).setVisibility(View.GONE);
+                    return true;
             }
             return false;
         }
@@ -99,11 +106,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        menu.add(R.string.title_exit);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        finish();
+        return true;
+    }
+
+
     // To setup views
     private void initViews() {
         // The Navigation Buttons
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        if (hasNavigationBar(this)) {
+            // There has a native navigation bar, we hide ourselves one.
+            navigation.setVisibility(View.GONE);
+        }
 
         // STT status sequence:
         //   uninitiated -> initialed -> listening
@@ -165,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     // and then enable Start & Stop buttons.
                     v.setEnabled(false);
                     findViewById(R.id.button_stt_start).setEnabled(true);
+                    findViewById(R.id.button_stt_cancel).setEnabled(true);
                     findViewById(R.id.button_stt_stop).setEnabled(true);
                 }
                 break;
@@ -177,9 +203,23 @@ public class MainActivity extends AppCompatActivity {
                     if (null != mSTT_lang) {
                         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, mSTT_lang);
                     }
+                    if(((CheckBox)findViewById(R.id.checkbox_enable_partial)).isChecked()) {
+                        // Enable partial result.
+                        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+                    }
+
                     mSR.setRecognitionListener(mSTT_listener);
                     mSR.startListening(intent);
                     mSTT_status.setText(R.string.listening);
+                }
+                break;
+
+            case R.id.button_stt_cancel:
+                if (DBG) Log.d(TAG, "onClick, stt cancel");
+                if (null != mSR) {
+                    mSR.stopListening();
+                    mSR.cancel();
+                    mSTT_status.setText(R.string.canceled);
                 }
                 break;
 
@@ -201,11 +241,15 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.button_tts_speak:
                 if (DBG) Log.d(TAG, "onClick, tts speak, mTTS_lang="+mTTS_lang);
-                if (null != mTTS && !mTTS.isSpeaking()) {
-                    if (null != mTTS_lang) {
-                        // Use desired TTS language if user selected one.
-                        mTTS.setLanguage(mTTS_lang);
-                    }
+                if (null != mTTS) {
+                    // Set speech rate and pitch.
+                    float speechRate =
+                            Float.valueOf(((EditText)findViewById(R.id.speech_rate_value)).getText().toString());
+                    float pitch =
+                            Float.valueOf(((EditText)findViewById(R.id.pitch_value)).getText().toString());
+                    if (DBG) Log.d(TAG, "onClick, tts speak, speechRate="+speechRate+", pitch="+pitch);
+                    mTTS.setSpeechRate(speechRate);
+                    mTTS.setPitch(pitch);
 
                     // Start speaking.
                     mTTS.speak(mTTS_content.getText(), TextToSpeech.QUEUE_ADD, null, TAG);
@@ -219,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.button_tts_stop:
                 if (DBG) Log.d(TAG, "onClick, tts stop");
-                if (null != mTTS && mTTS.isSpeaking()) {
+                if (null != mTTS) {
                     mTTS.stop();
                     mTTS_status.setText(R.string.stopped);
                 }
@@ -277,6 +321,11 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         if (DBG) Log.d(TAG, "TTS lang selected: "+selected_str+", mTTS_lang="+mTTS_lang);
+
+                        if (null != mTTS_lang && null != mTTS) {
+                            // Use desired TTS language if user selected one.
+                            mTTS.setLanguage(mTTS_lang);
+                        }
                     }
                     break;
 
@@ -302,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void onRmsChanged(float rmsdB) {
-            if (DBG) Log.d(TAG, "onRmsChanged");
+            //if (DBG) Log.d(TAG, "onRmsChanged, rmsdB="+rmsdB);
         }
 
         public void onBufferReceived(byte[] buffer) {
@@ -320,12 +369,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void onResults(Bundle results) {
+            //if (DBG) Log.d(TAG, "onResults");
             try {
                 // Get STT result and update it to UI.
                 ArrayList data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (null != data) {
                     String str = data.get(0).toString();
                     mSTT_result.setText(str);
+                    if (DBG) Log.d(TAG, "onResults, str="+str);
                 }
             } catch (Exception e) {
                 Log.e(TAG, "got exception, e="+e);
@@ -333,7 +384,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         public void onPartialResults(Bundle partialResults) {
-            if (DBG) Log.d(TAG, "onPartialResults");
+            //if (DBG) Log.d(TAG, "onPartialResults");
+            try {
+                // Get STT result and update it to UI.
+                ArrayList data = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (null != data) {
+                    String str = data.get(0).toString();
+                    mSTT_result.setText(str);
+                    if (DBG) Log.d(TAG, "onPartialResults, str="+str);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "got exception, e="+e);
+            }
         }
 
         public void onEvent(int eventType, Bundle params) {
@@ -406,5 +468,11 @@ public class MainActivity extends AppCompatActivity {
                 tv.setText(status);
             }
         });
+    }
+
+    // Return true if there has native navigation bar.
+    public boolean hasNavigationBar (Context context) {
+        int id = context.getResources().getIdentifier("config_showNavigationBar", "bool", "android");
+        return id > 0 && context.getResources().getBoolean(id);
     }
 }

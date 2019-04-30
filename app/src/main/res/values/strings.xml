@@ -6,21 +6,28 @@
     <string name="uninitiated">uninitiated</string>
     <string name="initialed">initialed</string>
     <string name="listening">listening</string>
+    <string name="canceled">canceled</string>
     <string name="stopped">stopped</string>
     <string name="speaking">speaking</string>
 
     <string name="language_colon">Language:</string>
     <string name="system_default">System default</string>
+    <string name="enable_partial_result">Enable Partial Result</string>
+    <string name="speech_rate">Speech Rate:</string>
+    <string name="pitch">Pitch:</string>
+    <string name="num_1.0">1.0</string>
 
     <string name="hint_none">(none)</string>
     <string name="stt_result_colon">STT result:</string>
 
     <string name="init">Init</string>
     <string name="start">Start</string>
+    <string name="cancel">Cancel</string>
     <string name="stop">Stop</string>
     <string name="speak">Speak</string>
 
     <string name="title_back">Back</string>
     <string name="title_home">Home</string>
     <string name="title_exit">Exit</string>
+    <string name="title_hide">Hide</string>
 </resources>
